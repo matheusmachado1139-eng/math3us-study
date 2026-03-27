@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>M@th3us Study GOD++</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: linear-gradient(135deg,#4facfe,#43e97b);
+  color: white;
+  text-align: center;
+}
+
+.screen { display:none; padding:20px; }
+.active { display:block; }
+
+button {
+  padding:12px;
+  margin:5px;
+  border:none;
+  border-radius:12px;
+  background:yellow;
+  font-weight:bold;
+  transition:0.2s;
+}
+
+button:active {
+  transform: scale(0.9);
+}
+
+.card {
+  background: rgba(255,255,255,0.2);
+  padding:15px;
+  margin:10px;
+  border-radius:15px;
+}
+
+input {
+  padding:10px;
+  margin:5px;
+  border-radius:10px;
+  border:none;
+}
+</style>
+</head>
+
+<body>
+
+<audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+
+<div id="login" class="screen active">
+<h2>Login</h2>
+<input id="user" placeholder="Usuário"><br>
+<input id="pass" placeholder="Senha"><br>
+<button onclick="login()">Entrar</button>
+</div>
+
+<div id="menu" class="screen">
+<h2>Bem-vindo, <span id="username"></span></h2>
+<p>XP: <span id="xp">0</span> | Nível: <span id="lvl">1</span></p>
+
+<button onclick="startQuiz()">Quiz</button>
+<button onclick="show('chat')">Chat</button>
+<button onclick="show('ranking')">Ranking</button>
+</div>
+
+<div id="quiz" class="screen">
+<h2 id="question"></h2>
+<div id="answers"></div>
+<p id="feedback"></p>
+</div>
+
+<div id="chat" class="screen">
+<h2>Chat</h2>
+<div id="messages"></div>
+<input id="msgInput" placeholder="Digite...">
+<button onclick="sendMsg()">Enviar</button>
+<button onclick="show('menu')">Voltar</button>
+</div>
+
+<div id="ranking" class="screen">
+<h2>Ranking</h2>
+<div id="rankList"></div>
+<button onclick="show('menu')">Voltar</button>
+</div>
+
+<script>
+let xp=0, lvl=1, user="";
+let banned=["feio","burro","idiota","lixo"];
+
+function sound(){
+document.getElementById("clickSound").play();
+}
+
+function show(id){
+sound();
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+function login(){
+let u=document.getElementById("user").value;
+let p=document.getElementById("pass").value;
+
+if(!u || !p){
+alert("Preencha tudo!");
+return;
+}
+
+user=u;
+localStorage.setItem("user",u);
+localStorage.setItem("xp_"+u,xp);
+
+document.getElementById("username").innerText=u;
+show("menu");
+}
+
+function loadData(){
+let u=localStorage.getItem("user");
+if(u){
+user=u;
+xp=parseInt(localStorage.getItem("xp_"+u))||0;
+lvl=Math.floor(xp/50)+1;
+document.getElementById("username").innerText=u;
+document.getElementById("xp").innerText=xp;
+document.getElementById("lvl").innerText=lvl;
+show("menu");
+}
+}
+
+let questions=[
+{q:"2+2?",a:["3","4","5","6"],c:1},
+{q:"Capital do Brasil?",a:["RJ","SP","Brasília","BH"],c:2}
+];
+
+let current=0;
+
+function startQuiz(){
+current=0;
+show("quiz");
+loadQ();
+}
+
+function loadQ(){
+let q=questions[current];
+document.getElementById("question").innerText=q.q;
+
+let div=document.getElementById("answers");
+div.innerHTML="";
+
+q.a.forEach((ans,i)=>{
+let b=document.createElement("button");
+b.innerText=ans;
+b.onclick=()=>check(i);
+div.appendChild(b);
+});
+}
+
+function check(i){
+if(i===questions[current].c){
+xp+=10;
+document.getElementById("feedback").innerText="Correto! +10 XP";
+}else{
+document.getElementById("feedback").innerText="Errado!";
+}
+
+lvl=Math.floor(xp/50)+1;
+
+localStorage.setItem("xp_"+user,xp);
+
+document.getElementById("xp").innerText=xp;
+document.getElementById("lvl").innerText=lvl;
+
+saveRanking();
+
+current++;
+if(current<questions.length){
+setTimeout(loadQ,1000);
+}else{
+setTimeout(()=>show("menu"),1000);
+}
+}
+
+function saveRanking(){
+let ranking=JSON.parse(localStorage.getItem("ranking")||"[]");
+
+let found=ranking.find(r=>r.user===user);
+if(found){
+found.xp=xp;
+}else{
+ranking.push({user:user,xp:xp});
+}
+
+ranking.sort((a,b)=>b.xp-a.xp);
+
+localStorage.setItem("ranking",JSON.stringify(ranking));
+}
+
+function showRanking(){
+let ranking=JSON.parse(localStorage.getItem("ranking")||"[]");
+let div=document.getElementById("rankList");
+div.innerHTML="";
+
+ranking.forEach(r=>{
+let d=document.createElement("div");
+d.className="card";
+d.innerText=r.user+" - "+r.xp+" XP";
+div.appendChild(d);
+});
+}
+
+function sendMsg(){
+let msg=document.getElementById("msgInput").value;
+
+if(banned.some(w=>msg.includes(w))){
+alert("Mensagem bloqueada 🚫");
+return;
+}
+
+let div=document.getElementById("messages");
+let d=document.createElement("div");
+d.className="card";
+d.innerText=user+": "+msg;
+div.appendChild(d);
+
+document.getElementById("msgInput").value="";
+}
+
+setInterval(showRanking,2000);
+loadData();
+
+</script>
+
+</body>
+  </html>
