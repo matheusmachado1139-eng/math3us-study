@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>M@th3us Study</title>
+
+<style>
+body{
+margin:0;
+font-family: 'Segoe UI', sans-serif;
+background:#f8fafc;
+color:#333;
+}
+
+.screen{
+display:none;
+padding:20px;
+animation:fade 0.4s;
+text-align:center;
+}
+
+.active{display:block;}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;}
+}
+
+h1{
+color:#4facfe;
+}
+
+.container{
+max-width:400px;
+margin:auto;
+}
+
+button{
+width:90%;
+padding:14px;
+margin:8px;
+border:none;
+border-radius:15px;
+background:#4facfe;
+color:white;
+font-size:16px;
+font-weight:bold;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+transition:0.2s;
+}
+
+button:hover{
+transform:translateY(-2px);
+}
+
+button:active{
+transform:scale(0.95);
+}
+
+.select{
+width:90%;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin:10px;
+border-radius:15px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* progresso */
+.progress{
+height:10px;
+background:#ddd;
+border-radius:10px;
+margin:15px;
+}
+
+.bar{
+height:100%;
+width:0%;
+background:#4facfe;
+border-radius:10px;
+transition:0.3s;
+}
+</style>
+</head>
+
+<body>
+
+<div id="home" class="screen active">
+<div class="container">
+<h1>M@th3us Study</h1>
+<button onclick="show('setup')">Começar</button>
+</div>
+</div>
+
+<div id="setup" class="screen">
+<div class="container">
+
+<h2>Matéria</h2>
+<button onclick="setSubject('Matemática')">Matemática</button>
+<button onclick="setSubject('Português')">Português</button>
+<button onclick="setSubject('História')">História</button>
+<button onclick="setSubject('Geografia')">Geografia</button>
+<button onclick="setSubject('Ciências')">Ciências</button>
+<button onclick="setSubject('Inglês')">Inglês</button>
+
+<h2>Série</h2>
+<select id="serie" class="select">
+<option>1º ano</option>
+<option>2º ano</option>
+<option>3º ano</option>
+<option>4º ano</option>
+<option>5º ano</option>
+<option>6º ano</option>
+<option>7º ano</option>
+<option>8º ano</option>
+<option>9º ano</option>
+<option>Ensino Médio</option>
+</select>
+
+<button onclick="goMenu()">Continuar</button>
+
+</div>
+</div>
+
+<div id="menu" class="screen">
+<div class="container">
+<h2 id="info"></h2>
+
+<button onclick="chooseContent()">📚 Aprender</button>
+<button onclick="startQuiz()">🎯 Quiz</button>
+</div>
+</div>
+
+<div id="content" class="screen">
+<div class="container">
+<h2>Escolha o tema</h2>
+<div id="topics"></div>
+</div>
+</div>
+
+<div id="explain" class="screen">
+<div class="container">
+<h2>Explicação</h2>
+<div class="card" id="text"></div>
+<button onclick="show('menu')">Voltar</button>
+</div>
+</div>
+
+<div id="quiz" class="screen">
+<div class="container">
+
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+
+<h2 id="question"></h2>
+<div id="answers"></div>
+<p id="feedback"></p>
+
+</div>
+</div>
+
+<script>
+
+let subject="";
+let serie="";
+
+function show(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+function setSubject(s){subject=s;}
+
+function goMenu(){
+serie=document.getElementById("serie").value;
+document.getElementById("info").innerText=subject+" - "+serie;
+show("menu");
+}
+
+/* CONTEÚDO POR SÉRIE */
+
+function chooseContent(){
+show("content");
+
+let topics={
+"1º ano":["Adição básica","Alfabeto"],
+"2º ano":["Subtração","Leitura"],
+"3º ano":["Multiplicação","Frases"],
+"4º ano":["Divisão","Pontuação"],
+"5º ano":["Frações","Classes de palavras"],
+"6º ano":["Potência","Advérbio"],
+"7º ano":["Equação","Verbo"],
+"8º ano":["Porcentagem","Interpretação"],
+"9º ano":["Funções","Crase"],
+"Ensino Médio":["Trigonometria","Análise sintática"]
+};
+
+let div=document.getElementById("topics");
+div.innerHTML="";
+
+topics[serie].forEach(t=>{
+let b=document.createElement("button");
+b.innerText=t;
+b.onclick=()=>showExplanation(t);
+div.appendChild(b);
+});
+}
+
+/* EXPLICAÇÕES */
+
+function showExplanation(topic){
+document.getElementById("text").innerText=
+"Explicação detalhada sobre "+topic+" com exemplos simples e fáceis.";
+show("explain");
+}
+
+/* QUIZ POR SÉRIE */
+
+let quizData={
+"1º ano":[{q:"1+1?",a:["2","3","4","5"],c:0}],
+"6º ano":[{q:"2²?",a:["2","4","6","8"],c:1}],
+"Ensino Médio":[{q:"sen(90)?",a:["0","1","2","3"],c:1}]
+};
+
+let current=0;
+
+function startQuiz(){
+current=0;
+show("quiz");
+loadQ();
+}
+
+function loadQ(){
+let q=quizData[serie][current];
+
+document.getElementById("question").innerText=q.q;
+
+let div=document.getElementById("answers");
+div.innerHTML="";
+
+q.a.forEach((ans,i)=>{
+let b=document.createElement("button");
+b.innerText=ans;
+b.onclick=()=>check(i);
+div.appendChild(b);
+});
+
+document.getElementById("bar").style.width=
+(current/quizData[serie].length)*100+"%";
+}
+
+function check(i){
+let q=quizData[serie][current];
+
+document.getElementById("feedback").innerText=
+i===q.c?"Correto! 🎉":"Errado 😢";
+
+current++;
+
+if(current<quizData[serie].length){
+setTimeout(loadQ,800);
+}else{
+document.getElementById("bar").style.width="100%";
+setTimeout(()=>show("menu"),1000);
+}
+}
+
+</script>
+
+</body>
+  </html>
