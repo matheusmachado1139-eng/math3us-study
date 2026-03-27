@@ -7,69 +7,42 @@
 <style>
 body{
 margin:0;
-font-family: 'Segoe UI', sans-serif;
-background:#f8fafc;
+font-family:'Segoe UI',sans-serif;
+background:#eef2f7;
 color:#333;
 }
 
-.screen{
-display:none;
-padding:20px;
-animation:fade 0.4s;
-text-align:center;
-}
-
+.screen{display:none;padding:20px;text-align:center;}
 .active{display:block;}
 
-@keyframes fade{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;}
-}
-
-h1{
-color:#4facfe;
-}
-
 .container{
-max-width:400px;
+max-width:420px;
 margin:auto;
 }
+
+h1{color:#4facfe;}
 
 button{
 width:90%;
 padding:14px;
-margin:8px;
+margin:6px;
 border:none;
-border-radius:15px;
+border-radius:16px;
 background:#4facfe;
 color:white;
-font-size:16px;
 font-weight:bold;
-box-shadow:0 4px 10px rgba(0,0,0,0.15);
+box-shadow:0 6px 12px rgba(0,0,0,0.1);
 transition:0.2s;
 }
 
-button:hover{
-transform:translateY(-2px);
-}
-
-button:active{
-transform:scale(0.95);
-}
-
-.select{
-width:90%;
-padding:10px;
-border-radius:10px;
-margin-top:10px;
-}
+button:active{transform:scale(0.95);}
 
 .card{
 background:white;
 padding:15px;
 margin:10px;
-border-radius:15px;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+border-radius:16px;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* progresso */
@@ -78,15 +51,19 @@ height:10px;
 background:#ddd;
 border-radius:10px;
 margin:15px;
+overflow:hidden;
 }
 
 .bar{
 height:100%;
 width:0%;
 background:#4facfe;
-border-radius:10px;
-transition:0.3s;
+transition:0.4s;
 }
+
+/* feedback */
+.correct{background:#4caf50 !important;}
+.wrong{background:#e74c3c !important;}
 </style>
 </head>
 
@@ -111,7 +88,7 @@ transition:0.3s;
 <button onclick="setSubject('Inglês')">Inglês</button>
 
 <h2>Série</h2>
-<select id="serie" class="select">
+<select id="serie">
 <option>1º ano</option>
 <option>2º ano</option>
 <option>3º ano</option>
@@ -169,8 +146,8 @@ transition:0.3s;
 
 <script>
 
-let subject="";
-let serie="";
+let subject="", serie="";
+let current=0, quiz=[];
 
 function show(id){
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -185,62 +162,83 @@ document.getElementById("info").innerText=subject+" - "+serie;
 show("menu");
 }
 
-/* CONTEÚDO POR SÉRIE */
+/* CONTEÚDO CORRETO */
 
 function chooseContent(){
 show("content");
 
 let topics={
-"1º ano":["Adição básica","Alfabeto"],
-"2º ano":["Subtração","Leitura"],
-"3º ano":["Multiplicação","Frases"],
-"4º ano":["Divisão","Pontuação"],
-"5º ano":["Frações","Classes de palavras"],
-"6º ano":["Potência","Advérbio"],
-"7º ano":["Equação","Verbo"],
-"8º ano":["Porcentagem","Interpretação"],
-"9º ano":["Funções","Crase"],
-"Ensino Médio":["Trigonometria","Análise sintática"]
+"Matemática":{
+"6º ano":["Raiz Quadrada","Frações","Divisão"]
+},
+"Português":{
+"5º ano":["Advérbio","Substantivo","Verbo"]
+}
 };
 
 let div=document.getElementById("topics");
 div.innerHTML="";
 
-topics[serie].forEach(t=>{
+if(topics[subject] && topics[subject][serie]){
+topics[subject][serie].forEach(t=>{
 let b=document.createElement("button");
 b.innerText=t;
 b.onclick=()=>showExplanation(t);
 div.appendChild(b);
 });
+}else{
+div.innerHTML="<p>Conteúdo em breve 🚧</p>";
+}
 }
 
-/* EXPLICAÇÕES */
+/* EXPLICAÇÃO BOA */
 
 function showExplanation(topic){
-document.getElementById("text").innerText=
-"Explicação detalhada sobre "+topic+" com exemplos simples e fáceis.";
+let text={
+"Raiz Quadrada":
+"A raiz quadrada é o número que multiplicado por ele mesmo resulta em outro número. Exemplo: √16 = 4 porque 4 × 4 = 16.",
+"Advérbio":
+"Advérbio é uma palavra que modifica o verbo, indicando modo, tempo, lugar ou intensidade. Exemplo: correr rápido."
+};
+
+document.getElementById("text").innerText=text[topic] || "Conteúdo em breve.";
 show("explain");
 }
 
-/* QUIZ POR SÉRIE */
-
-let quizData={
-"1º ano":[{q:"1+1?",a:["2","3","4","5"],c:0}],
-"6º ano":[{q:"2²?",a:["2","4","6","8"],c:1}],
-"Ensino Médio":[{q:"sen(90)?",a:["0","1","2","3"],c:1}]
-};
-
-let current=0;
+/* QUIZ CERTO */
 
 function startQuiz(){
 current=0;
+
+let data={
+"Matemática":{
+"6º ano":[
+{q:"√25 = ?",a:["3","4","5","6"],c:2},
+{q:"√9 = ?",a:["2","3","4","5"],c:1},
+{q:"√36 = ?",a:["5","6","7","8"],c:1}
+]
+},
+"Português":{
+"5º ano":[
+{q:"Qual é advérbio?",a:["rápido","casa","bola","carro"],c:0},
+{q:"Qual é verbo?",a:["correr","mesa","carro","bola"],c:0}
+]
+}
+};
+
+quiz = data[subject]?.[serie] || [];
+
+if(quiz.length===0){
+alert("Quiz ainda não disponível 😢");
+return;
+}
+
 show("quiz");
 loadQ();
 }
 
 function loadQ(){
-let q=quizData[serie][current];
-
+let q=quiz[current];
 document.getElementById("question").innerText=q.q;
 
 let div=document.getElementById("answers");
@@ -249,31 +247,38 @@ div.innerHTML="";
 q.a.forEach((ans,i)=>{
 let b=document.createElement("button");
 b.innerText=ans;
-b.onclick=()=>check(i);
+b.onclick=()=>check(i,b);
 div.appendChild(b);
 });
 
 document.getElementById("bar").style.width=
-(current/quizData[serie].length)*100+"%";
+(current/quiz.length)*100+"%";
 }
 
-function check(i){
-let q=quizData[serie][current];
+function check(i,btn){
+let q=quiz[current];
 
-document.getElementById("feedback").innerText=
-i===q.c?"Correto! 🎉":"Errado 😢";
+if(i===q.c){
+btn.classList.add("correct");
+document.getElementById("feedback").innerText="Correto! 🎉";
+}else{
+btn.classList.add("wrong");
+document.getElementById("feedback").innerText="Errado 😢";
+}
 
 current++;
 
-if(current<quizData[serie].length){
-setTimeout(loadQ,800);
+setTimeout(()=>{
+if(current<quiz.length){
+loadQ();
 }else{
 document.getElementById("bar").style.width="100%";
 setTimeout(()=>show("menu"),1000);
 }
+},800);
 }
 
 </script>
 
 </body>
-  </html>
+</html>
