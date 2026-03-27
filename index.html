@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>M@th3us Study</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#f4f6f9;
+color:#333;
+text-align:center;
+}
+
+.screen{display:none;padding:20px;animation:fade 0.4s;}
+.active{display:block;}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(15px);}
+to{opacity:1;}
+}
+
+button{
+padding:12px;
+margin:6px;
+border:none;
+border-radius:12px;
+background:#4facfe;
+color:white;
+font-weight:bold;
+transition:0.2s;
+}
+
+button:hover{transform:scale(1.08);}
+button:active{transform:scale(0.92);}
+
+.card{
+background:white;
+padding:15px;
+margin:10px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* barra progresso */
+.progress{
+width:100%;
+height:10px;
+background:#ddd;
+border-radius:10px;
+margin:10px 0;
+}
+
+.progress-bar{
+height:100%;
+width:0%;
+background:#4facfe;
+border-radius:10px;
+transition:0.3s;
+}
+</style>
+</head>
+
+<body>
+
+<div id="home" class="screen active">
+<h1>M@th3us Study</h1>
+<button onclick="show('setup')">Começar</button>
+</div>
+
+<div id="setup" class="screen">
+<h2>Matéria</h2>
+
+<button onclick="setSubject('Matemática')">Matemática</button>
+<button onclick="setSubject('Português')">Português</button>
+<button onclick="setSubject('História')">História</button>
+<button onclick="setSubject('Geografia')">Geografia</button>
+<button onclick="setSubject('Ciências')">Ciências</button>
+<button onclick="setSubject('Inglês')">Inglês</button>
+
+<h2>Série</h2>
+<select id="serie">
+<option>1º ano</option>
+<option>2º ano</option>
+<option>3º ano</option>
+<option>4º ano</option>
+<option>5º ano</option>
+<option>6º ano</option>
+<option>7º ano</option>
+<option>8º ano</option>
+<option>9º ano</option>
+<option>Ensino Médio</option>
+</select>
+
+<br><br>
+<button onclick="goMenu()">Continuar</button>
+</div>
+
+<div id="menu" class="screen">
+<h2 id="info"></h2>
+
+<button onclick="chooseContent()">📚 Aprender</button>
+<button onclick="startQuiz()">🎯 Quiz</button>
+</div>
+
+<div id="content" class="screen">
+<h2>Escolha o tema</h2>
+<div id="topics"></div>
+</div>
+
+<div id="explain" class="screen">
+<h2>Explicação</h2>
+<div class="card" id="text"></div>
+<button onclick="show('menu')">Voltar</button>
+</div>
+
+<div id="quiz" class="screen">
+<div class="progress">
+<div class="progress-bar" id="bar"></div>
+</div>
+
+<h2 id="question"></h2>
+<div id="answers"></div>
+<p id="feedback"></p>
+</div>
+
+<script>
+
+let subject="";
+let serie="";
+
+function show(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
+
+function setSubject(s){subject=s;}
+
+function goMenu(){
+serie=document.getElementById("serie").value;
+document.getElementById("info").innerText=subject+" - "+serie;
+show("menu");
+}
+
+function chooseContent(){
+show("content");
+
+let topics={
+"Matemática":["Raiz Quadrada","Frações","Equações"],
+"Português":["Advérbio","Verbo","Substantivo"],
+"História":["Brasil Colônia","Império","República"],
+"Geografia":["Clima","Relevo","Mapas"],
+"Ciências":["Corpo Humano","Sistema Solar","Água"],
+"Inglês":["Verbo To Be","Cores","Números"]
+};
+
+let div=document.getElementById("topics");
+div.innerHTML="";
+
+topics[subject].forEach(t=>{
+let b=document.createElement("button");
+b.innerText=t;
+b.onclick=()=>showExplanation(t);
+div.appendChild(b);
+});
+}
+
+function showExplanation(topic){
+let text={
+"Raiz Quadrada":"Raiz quadrada é o número que multiplicado por ele mesmo dá outro número. Ex: √9 = 3.",
+"Frações":"Frações representam partes de um todo.",
+"Equações":"Equações têm incógnitas.",
+"Advérbio":"Modifica o verbo.",
+"Verbo":"Indica ação.",
+"Substantivo":"Nomeia coisas.",
+"Brasil Colônia":"Domínio de Portugal.",
+"Império":"Governo imperial.",
+"República":"Governo com presidente.",
+"Clima":"Condições do tempo.",
+"Relevo":"Formas da Terra.",
+"Mapas":"Representações.",
+"Corpo Humano":"Sistema do corpo.",
+"Sistema Solar":"Planetas.",
+"Água":"Essencial à vida.",
+"Verbo To Be":"Ser/estar.",
+"Cores":"Red, blue...",
+"Números":"One, two..."
+};
+
+document.getElementById("text").innerText=text[topic];
+show("explain");
+}
+
+/* QUIZ POR MATÉRIA */
+
+let quizData={
+"Matemática":[
+{q:"2+2?",a:["3","4","5","6"],c:1},
+{q:"5x2?",a:["10","8","7","9"],c:0}
+],
+"Português":[
+{q:"Plural de cão?",a:["cães","cãos","cao","caes"],c:0}
+],
+"História":[
+{q:"Quem descobriu o Brasil?",a:["Cabral","Pedro","João","Carlos"],c:0}
+],
+"Geografia":[
+{q:"Maior país?",a:["Brasil","EUA","China","Rússia"],c:3}
+],
+"Ciências":[
+{q:"Planeta azul?",a:["Terra","Marte","Júpiter","Vênus"],c:0}
+],
+"Inglês":[
+{q:"Hello?",a:["Oi","Tchau","Sim","Não"],c:0}
+]
+};
+
+let current=0;
+
+function startQuiz(){
+current=0;
+show("quiz");
+loadQ();
+}
+
+function loadQ(){
+let q=quizData[subject][current];
+
+document.getElementById("question").innerText=q.q;
+
+let div=document.getElementById("answers");
+div.innerHTML="";
+
+q.a.forEach((ans,i)=>{
+let b=document.createElement("button");
+b.innerText=ans;
+b.onclick=()=>check(i);
+div.appendChild(b);
+});
+
+/* barra progresso */
+let progress=((current)/quizData[subject].length)*100;
+document.getElementById("bar").style.width=progress+"%";
+}
+
+function check(i){
+let q=quizData[subject][current];
+
+if(i===q.c){
+document.getElementById("feedback").innerText="Correto! 🎉";
+}else{
+document.getElementById("feedback").innerText="Errado 😢";
+}
+
+current++;
+
+if(current<quizData[subject].length){
+setTimeout(loadQ,800);
+}else{
+document.getElementById("bar").style.width="100%";
+setTimeout(()=>show("menu"),1000);
+}
+}
+
+</script>
+
+</body>
+  </html>
